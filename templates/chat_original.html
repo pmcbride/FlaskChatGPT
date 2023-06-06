@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chatbot</title>
+    <!-- Import Bootstrap and jQuery -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Chatbot</h1>
+        <!-- Create a chat area for displaying messages -->
+        <div id="chat-area" class="card">
+            <div id="chat-history" class="card-body">
+                <!-- Chat messages will be appended here -->
+            </div>
+        </div>
+        <!-- Create a textbox for entering messages -->
+        <div id="message-area" class="form-group">
+            <input id="message-box" type="text" class="form-control" placeholder="Type your message here...">
+        </div>
+        <!-- Create a button for submitting messages -->
+        <div id="button-area" class="form-group">
+            <button id="send-button" type="button" class="btn btn-primary">Send</button>
+        </div>
+    </div>
+    <!-- Use some JavaScript code to handle the event listeners and the AJAX requests -->
+    <script>
+        // Define a function to append a message to the chat history
+        // function appendMessage(message, sender) {
+        //     // Create a div element for the message
+        //     var messageDiv = document.createElement("div");
+        //     // Add a class name based on the sender
+        //     messageDiv.className = sender == "user" ? "alert alert-info" : "alert alert-success";
+        //     // Add the message text as the inner HTML
+        //     messageDiv.innerHTML = message;
+        //     // Append the message div to the chat history div
+        //     var chatHistory = document.getElementById("chat-history");
+        //     chatHistory.appendChild(messageDiv);
+        //     // Scroll to the bottom of the chat history div
+        //     chatHistory.scrollTop = chatHistory.scrollHeight;
+        // }
+        // Define a function to append messages to the chat history
+        function appendMessage(messages, sender) {
+            for (var i = 0; i < messages.length; i++) {
+                var message = messages[i];
+                // Create a div element for the message
+                var messageDiv = document.createElement("div");
+                // Add a class name based on the sender
+                messageDiv.className = sender == "user" ? "alert alert-info" : "alert alert-success";
+                // Add the message text as the inner HTML
+                messageDiv.innerHTML = message;
+                // Append the message div to the chat history div
+                var chatHistory = document.getElementById("chat-history");
+                chatHistory.appendChild(messageDiv);
+                // Scroll to the bottom of the chat history div
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }
+        }
+        // Define a function to send a message to the Flask route and get a response
+        function sendMessage(message) {
+            // Get the current chat history as an array
+            var chatHistory = JSON.parse(document.getElementById("chat-history").getAttribute("data-chat-history") || "[]");
+            // Append the user message to the chat history array
+            chatHistory.push([message, ""]);
+            // Send an AJAX request to the Flask route with the user message and the chat history as parameters
+            // $.get("/respond", { message: message, chat_history: JSON.stringify(chatHistory) }, function (response) {
+            //     // Parse the response as an array
+            //     var responseArray = JSON.parse(response);
+            //     // Get the last element of the response array as the bot message
+            //     var botMessage = responseArray[responseArray.length - 1][1];
+            //     // Append the bot message to the chat history array
+            //     chatHistory.push(["", botMessage]);
+            //     // Update the chat history attribute with the updated chat history array as a string
+            //     document.getElementById("chat-history").setAttribute("data-chat-history", JSON.stringify(chatHistory));
+            //     // Append the bot message to the chat history div
+            //     appendMessage(botMessage, "bot");
+            // });
+            $.get("/respond", { message: message, chat_history: JSON.stringify(chatHistory) }, function (response) {
+                // Parse the response as an array
+                var responseArray = JSON.parse(response);
+                // Get the last element of the response array as the bot message
+                var botMessages = responseArray.chat_history;
+                // Append the bot message to the chat history array
+                chatHistory.push(botMessages);
+                // Update the chat history attribute with the updated chat history array as a string
+                document.getElementById("chat-history").setAttribute("data-chat-history", JSON.stringify(chatHistory));
+                // Append the bot message to the chat history div
+                appendMessage(botMessages, "bot");
+            });
+        }
+        
+        window.onload = function () {
+            var initialChatHistory = JSON.parse(document.getElementById("chat-history").getAttribute("data-chat-history") || "[]");
+            for (var i = 0; i < initialChatHistory.length; i++) {
+                var messagePair = initialChatHistory[i];
+                appendMessage([messagePair[0]], "user");
+                appendMessage([messagePair[1]], "bot");
+            }
+        }
+        
+        // Add an event listener to the send button for clicking events
+        document.getElementById("send-button").addEventListener("click", function () {
+            // Get the value of the message box as the user message
+            var message = document.getElementById("message-box").value;
+            // Clear the value of the message box
+            document.getElementById("message-box").value = "";
+            // Append the user message to the chat history div
+            appendMessage(message, "user");
+            // Send the user message to the Flask route and get a response
+            sendMessage(message);
+        });
+
+        // Add an event listener to the message box for keypress events
+        document.getElementById("message-box").addEventListener("keypress", function (event) {
+            // Check if the key pressed is Enter (code 13)
+            if (event.keyCode == 13) {
+                // Prevent the default behavior of submitting the form
+                event.preventDefault();
+                // Click the send button programmatically
+                document.getElementById("send-button").click();
+            }
+        });
+    </script>
+</body>
+
+</html>

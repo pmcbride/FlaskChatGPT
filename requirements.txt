@@ -1,0 +1,32 @@
+openai
+flask
+flask-markdown
+# gradio
+langchain
+tiktoken>=0.4.0
+requests
+elevenlabs
+plotly
+python-dotenv
+faiss-cpu
+scipy
+playwright
+scikit-learn
+
+google-api-python-client
+google-search-results
+pydantic
+
+pylint
+pylance
+autopep8
+black
+flake8
+isort
+
+jupyter
+ipykernel
+ipython
+
+# HTML
+markdown
